@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menejment — Quiz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height: 100vh; background: #0f0f1a; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+.card { background: #1a1a2e; border-radius: 20px; padding: 36px 28px; max-width: 560px; width: 100%; box-shadow: 0 0 60px #6c63ff33; border: 1px solid #6c63ff44; }
+h1 { color: #a78bfa; font-size: 26px; font-weight: 800; }
+h2 { color: #a78bfa; font-size: 22px; font-weight: 800; }
+.subtitle { color: #8888aa; font-size: 14px; margin-top: 8px; }
+.emoji-big { font-size: 52px; text-align: center; display: block; margin-bottom: 8px; }
+.section-label { color: #c4c4e0; font-size: 14px; display: block; margin-bottom: 8px; font-weight: 600; }
+.range-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+.range-input { background: #12122a; border: 1px solid #3a3a5a; border-radius: 8px; color: #e0e0f0; font-size: 15px; padding: 8px 12px; width: 80px; text-align: center; outline: none; }
+.range-input:focus { border-color: #6c63ff; }
+.range-sep { color: #8888aa; font-size: 16px; }
+.range-info { color: #6c63ff; font-size: 13px; margin-top: 4px; }
+.quick-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.quick-btn { padding: 7px 13px; border-radius: 9px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; background: #2a2a3e; color: #8888aa; transition: all 0.2s; }
+.quick-btn:hover { background: #3a3a5e; color: #a78bfa; }
+.toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.toggle { width: 44px; height: 24px; border-radius: 12px; background: #2a2a3e; cursor: pointer; position: relative; transition: background 0.3s; flex-shrink: 0; }
+.toggle.on { background: #6c63ff; }
+.toggle-dot { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left 0.3s; }
+.toggle.on .toggle-dot { left: 23px; }
+.toggle-label { color: #c4c4e0; font-size: 14px; }
+.btn-primary { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; font-size: 17px; font-weight: 700; box-shadow: 0 4px 20px #6c63ff55; }
+.btn-primary:disabled { background: #2a2a3e; color: #555; cursor: not-allowed; box-shadow: none; }
+.btn-secondary { flex: 1; padding: 13px; border-radius: 12px; border: none; cursor: pointer; background: #2a2a3e; color: #a78bfa; font-size: 15px; font-weight: 700; }
+.btn-next { width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer; background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; font-size: 15px; font-weight: 700; }
+.btn-check { width: 100%; padding: 13px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; }
+.btn-check.active { background: linear-gradient(135deg, #6c63ff, #a78bfa); color: #fff; cursor: pointer; }
+.btn-check.disabled { background: #2a2a3e; color: #555; cursor: not-allowed; }
+.progress-bar-bg { height: 4px; background: #2a2a3e; border-radius: 4px; margin-bottom: 20px; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, #6c63ff, #a78bfa); border-radius: 4px; transition: width 0.4s; }
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.header-left { color: #8888aa; font-size: 13px; }
+.header-right { display: flex; gap: 10px; align-items: center; }
+.score-badge { color: #4ade80; font-size: 13px; font-weight: 600; }
+.timer-badge { font-size: 14px; font-weight: 700; background: #12122a; padding: 4px 10px; border-radius: 8px; }
+.timer-ok { color: #fbbf24; }
+.timer-urgent { color: #f87171; }
+.question-box { background: #12122a; border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; min-height: 80px; }
+.question-text { color: #e0e0f0; font-size: 15px; line-height: 1.6; }
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.option { border-radius: 10px; padding: 13px 16px; cursor: pointer; font-size: 14px; line-height: 1.5; transition: all 0.2s; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #2a2a4a; background: #1e1e32; color: #c4c4e0; }
+.option.selected { background: #2d2a5e; border-color: #a78bfa; color: #a78bfa; }
+.option.correct { background: #14532d; border-color: #4ade80; color: #4ade80; }
+.option.wrong { background: #450a0a; border-color: #f87171; color: #f87171; }
+.opt-letter { font-weight: 700; min-width: 22px; flex-shrink: 0; }
+.score-big { font-size: 40px; font-weight: 900; margin: 12px 0; text-align: center; }
+.score-sub { color: #8888aa; font-size: 14px; text-align: center; }
+.wrong-list { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.wrong-item { background: #12122a; border-radius: 10px; padding: 12px 14px; border-left: 3px solid #f87171; }
+.wrong-q { color: #e0e0f0; font-size: 13px; margin-bottom: 8px; line-height: 1.4; }
+.wrong-yours { color: #f87171; font-size: 12px; margin-bottom: 4px; }
+.wrong-correct { color: #4ade80; font-size: 12px; }
+.wrong-title { color: #f87171; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.result-btn-row { display: flex; gap: 10px; }
+.text-center { text-align: center; }
+.mb24 { margin-bottom: 24px; }
+.mb28 { margin-bottom: 28px; }
+.err { color: #f87171; font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const rawQuestions = [
+  { q: "Menejment deganda nima tushuniladi?", options: ["boshqaruv, ya'ni resurslarni, odamlarni boshqarish, samarali faoliyat olib borish va foyda olishni bilish, uni ko'paytirish jarayonidir", "nafaqat mahsulot yoki xizmatni sotish, balki bozorni chuqur tahlil qilish, mijoz ehtiyojlarini to'g'ri aniqlash jarayonidir", "ishlab chiqarish munosabatlarini nazorat qilish", "samarali faoliyat olib borish va foyda olishni bilish, uni ko'paytirish jarayonidir"], answer: 0 },
+  { q: "Boshqaruv usullari:", options: ["kishilarga ta'sir etishning umumiy vositalari va yo'llari", "faoliyat yo'nalish", "rahbarni shaxsiy sub'ektiv jihatlarining qo'llanishi", "tashkilotning funksional bo'g'inlarining vazifalarini bajarilishi"], answer: 0 },
+  { q: "Qaror qabul qilish bu:", options: ["alternativ yechim tanlash", "rozilik berish", "muammolarni o'rganish", "erishilgan natijalarga baho berish"], answer: 0 },
+  { q: "Menejmentning asosiy tamoyillari?", options: ["demokratiyalash tamoyili, ierarxiya tamoyili, rejalashtirish tamoyili, yakkahokimlik tamoyili, ilmiylik tamoyili, qayta aloqalar tamoyili, javobgarlik tamoyili", "boshqaruv jarayonida xodimlar va manfaatdor tomonlarning fikrini inobatga olish, qaror qabul qilishda jamoaviylikni ta'minlashni anglatadi", "demokratiyalash tamoyili, ierarxiya tamoyili, ilmiylik tamoyili", "demokratiyalash tamoyili, ierarxiya tamoyili, rejalashtirish tamoyili, taqsimlash tamoyili"], answer: 0 },
+  { q: "Menejment subyekti bo'lib:", options: ["boshqaruv organlari hisoblanadi", "konsernlar hisoblanadi", "ijro etuvi hokimiyat va boshqaruv organlari hisoblanadi", "ijro etuvchi hokimiyat hisoblanadi"], answer: 0 },
+  { q: "Menejment fani nimani o'rgatadi?", options: ["boshqaruvchiga tanlovni to'g'ri amalga oshirishni va ishchan qarorni qabul qilishni o'rgatuvchi fandir", "boshqaruvchiga rejalar tuzishni o'rgatuvchi fandir", "Boshqaruvchiga prognoz qilishni o'rgatuvchi fandir", "tashkilot faoliyatida yuzaga kelishi mumkin bo'lgan moliyaviy yo'qotishlarni oldindan aniqlashni o'rgatuvchi ilmiy-amaliy fandir"], answer: 0 },
+  { q: "Menejment mohiyati quyidagilardan iborat:", options: ["qo'yilgan maqsadga erishish yo'lidagi boshqaruv harakatlari", "bu boshqaruv huquqi haqidagi va funksiya faoliyatini amalga oshiruvchi fan", "bu funksiya faoliyati ko'rinishi", "bu inson bilimlar sohasini o'rganadi"], answer: 0 },
+  { q: "«Menejment» kursi iqtisodiy fanlar ichidagi qaysi fanlar jumlasiga kiradi:", options: ["umumiqtisodiy", "tarmoq", "funksional", "amaliy fanlar"], answer: 0 },
+  { q: "Xarajatlar deganda nima tushuniladi?", options: ["bu mahsulotni ishlab chiqarish (xizmat ko'rsatish) va uni sotish hamda xodimlarga to'lash uchun sarflanadigan mablag'lar", "bu mahsulot (xizmat)ning iste'molchilarga qanchalik ijobiy natija keltirishi", "bu tovar va xizmatlarning pulda ifodalangan qiymati", "bu tovar va xizmatlarning moddiy ifodalangan qiymati"], answer: 0 },
+  { q: "Qayta aloqalar tamoyili nimani anglatadi?", options: ["bu boshqaruv jarayonida amalga oshirilgan qaror va harakatlar natijalari to'g'risida ma'lumotlarni doimiy ravishda qabul qilish, ularni tahlil qilish va shu asosda faoliyatni takomillashtirib borishni anglatadi", "bu tamoyil, eng avvalo, boshqaruvchilarning javobgarligini nazarda tutadi", "bu tashkilotning turli darajadagi tuzilmalari o'rtasida uyg'unlik va muvozanatni ta'minlashni anglatadi", "ommani boshqarishga keng ko'lamda jalb qilishni, kengash va maslahat bilan ishlarning bajarilishini talab qiladi"], answer: 0 },
+  { q: "Baho deganda nima tushuniladi?", options: ["bu tovar va xizmatlarning pulda ifodalangan qiymatidir", "bu mahsulotni sotish hamda xodimlarga to'lash uchun sarflanadigan mablag'lardir", "bu mahsulot (xizmat)ning ist'emolchilarga qanchalik ijobiy natija keltirishidir", "mahsulotga ketgan xarajatlar yig'indisi"], answer: 0 },
+  { q: "Boshqarishning sir-asrorlarini ilmiy asosda o'rganishda menejment fani qaysi usullarni qo'llaydi:", options: ["modellashtirish usuli, sistemali yondashuv usuli, eksperiment usuli, kuzatish usuli", "eksperiment usuli, SWOT tahlil", "kuzatish usuli, qayta aloqalar, irarxiyalik", "modellashtirish usuli, prognozlashtirish, tahlil qilish, qayta aloqalar, irarxiyalik"], answer: 0 },
+  { q: "Naf deganda nima tushuniladi?", options: ["bu mahsulot (xizmat)ning ist'emolchilarga qanchalik ijobiy natija keltirishidir", "bu tovar va xizmatlarning pulda ifodalangan qiymatidir", "bu mahsulotni ishlab chiqarish (xizmat ko'rsatish) uchun sarflanadigan qiymat", "bu mahsulotni ishlab chiqarish (xizmat ko'rsatish) qiymati"], answer: 0 },
+  { q: "Yakkahokimlik tamoyili nimani anglatadi?", options: ["boshqarishga tayinlangan shaxs tomonidan bajarilib, unga boshqariladigan obyekt, uning mol-mulki, pul mablag'lari ishonib topshiriladi", "boshqarish bo'g'inlari o'rtasidagi taraqqiyot nisbatlarini aniqlaydi, shartnomalarning bajarilishini tashkil qiladi va nazorat qiladi", "bu tamoyil, bir tomonidan, markaziy, ikkinchi tomondan esa, viloyat shahar va tumanlar darajasidagi davlat hokimiyatining vazifalarini aniq belgilashni talab qiladi", "topshiriqni berishda tushundinglarmi? deb so'rash etarli emas"], answer: 0 },
+  { q: "Rejalashtirish tamoyili nimani anglatadi?", options: ["boshqarish bo'g'inlari o'rtasidagi taraqqiyot nisbatlarini aniqlaydi, shartnomalarning bajarilishini tashkil qiladi va nazorat qiladi", "bu tamoyil, bir tomonidan, markaziy, ikkinchi tomondan esa, viloyat shahar va tumanlar darajasidagi davlat hokimiyatining vazifalarini aniq belgilashni talab qiladi", "topshiriqni berishda tushundinglarmi? deb so'rash yetarli emas", "ommani boshqarishga keng ko'lamda jalb qilishni, kengash va maslahat bilan ishlarning bajarilishini talab qiladi"], answer: 0 },
+  { q: "Javobgarlik tamoyili nimani anglatadi?", options: ["bu tamoyil, eng avvalo, boshqaruvchilarning javobgarligini nazarda tutadi", "topshiriqni berishda tushundinglarmi deb so'rash etarli emasligi", "boshqarish bo'g'inlari o'rtasidagi taraqqiyot nisbatlarini aniqlaydi", "ommani boshqarishga keng ko'lamda jalb qilishni, kengash va maslaxat bilan ishlarning bajarilishini talab qiladi"], answer: 0 },
+  { q: "Ierarxiya tamoyili nimani anglatadi?", options: ["boshqarishning pog'onaligiga asoslanadi va bir tomonidan markaziy, ikkinchi tomondan esa, viloyat shahar va tumanlar darajasidagi davlat hokimiyati hamda boshqaruv idoralarining vazifalarini aniq belgilashni talab qiladi", "xodim mas'uliyati topshiriqni to'g'ri tushunish, uni vijdonan bajarish, belgilangan muddatlarga rioya qilish va natija uchun javob berishni o'z ichiga oladi", "boshqarish bo'g'inlari o'rtasidagi taraqqiyot nisbatlarini aniqlaydi", "ommani boshqarishga keng ko'lamda jalb qilishni, kengash va maslaxat bilan ishlarning bajarilishini talab qiladi"], answer: 0 },
+  { q: "Boshqaruvda tizimli yondashuv nimani ifodalaydi?", options: ["boshqaruv obyekti murakkab ijtimoiy-iqtisodiy, o'zgaruvchan tizim, ichki tartib va o'zaro aloqaga bir butun yaxlitlikni tashkil etuvchi unsurlar yig'indisi sifatida o'rganilishini ifodalaydi", "boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida nazorat qilishni ifodalaydi", "boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida jarayon o'zgarishlariga e'tibor berishni ifodalaydi", "boshqaruv vazifalarini bajarishda tashkilotlarning tarkibiy tuzilishini ifodalaydi"], answer: 0 },
+  { q: "Boshqaruvda vaziyatli yondashuv nimani ifodalaydi?", options: ["boshqaruv vazifalarini bajarishda korxona ichida hamda korxona va tarmoqlar o'rtasida vaziyat o'zgarishlarini e'tibor berish sifatida o'rganilishini ifodalaydi", "boshqaruv vazifalarini bajarishda nazorat qilishni ifodalaydi", "boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida miqdoriy o'zgarishlariga e'tibor berishni ifodalaydi", "boshqaruv obyekti murakkab ijtimoiy-iqtisodiy tizim sifatida o'rganilishini ifodalaydi"], answer: 0 },
+  { q: "Boshqaruvda jarayonli yondashuv nimani ifodalaydi?", options: ["boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida jarayon o'zgarishlariga e'tibor berishni ifodalaydi", "boshqaruv obyekti murakkab ijtimoiy-iqtisodiy tizim sifatida o'rganilishini ifodalaydi", "boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida miqdoriy o'zgarishlariga e'tibor berishni ifodalaydi", "boshqaruv vazifalarini bajarishda korxona ichida vaziyat o'zgarishlari e'tibor berish sifatida o'rganilishini ifodalaydi"], answer: 0 },
+  { q: "Boshqaruvda miqdoriy yondashuv nimani ifodalaydi?", options: ["boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida miqdoriy o'zgarishlariga e'tibor berishni ifodalaydi", "boshqaruv vazifalarini bajarishda korxona ichida hamda korxona va tarmoqlar o'rtasida vaziyat o'zgarishlari e'tibor berish sifatida o'rganilishini ifodalaydi", "boshqaruv vazifalarini bajarishda korxona va tarmoqlar o'rtasida jarayon o'zgarishlariga e'tibor berishni ifodalaydi", "ichki tartib va o'zaro aloqaga bir butun yaxlitlikni tashkil etuvchi unsurlar yig'indisi sifatida o'rganilishini ifodalaydi"], answer: 0 },
+  { q: "Teylorning zamondoshi va ishining davomchisi amerikalik iqtisodchi…", options: ["G.Emerson", "A.Fayol", "E.Meyo", "G.Ford"], answer: 0 },
+  { q: "Qaysi maktabning vujudga kelishi munosabati bilan mutaxassislar umum tashkilot darajasidagi boshqaruv muammolari bilan shug'ullana boshladilar?", options: ["ma'muriy boshqaruv maktabi", "ilmiy boshqaruv maktabi", "insoniy munosabatlar maktabi", "tizimli boshqaruv maktabi"], answer: 0 },
+  { q: "Kimlar ilmiy menejmentning (1885-1920) namoyondalari bo'lgan?", options: ["F.Teylor, G.Emerson", "A.Fayol, M.Veber", "E.Meyo, R.Laykert", "G.Saymon, P.Druker, E.Deyl"], answer: 0 },
+  { q: "Sohibqiron Amir Temur davlat va jamiyatni boshqarishda nechta ijtimoiy siyosiy guruhga tayangan:", options: ["12 ta", "9 ta", "10 ta", "14 ta"], answer: 0 },
+  { q: "Fayolning nechta boshqaruv tamoyillari mavjud?", options: ["14", "12", "13", "15"], answer: 0 },
+  { q: "Boshqarish ta'limotidagi asosiy maktablarni sanab o'ting", options: ["ilmiy menejment maktabi, mumtoz menejment maktabi, «Insoniy munosabatlar maktabi», miqdoriy tizimli menejment maktabi", "boshqaruv nazariyasining dastlabki ilmiy yo'nalishlaridan biri bo'lib, tashkilotni aniq tuzilma asosida boshqarishni ilgari suradi", "aralash, chiziqli, funksional menejment maktablari", "innovatsion menejment maktabi, demokratik menejment maktabi, liberal menejment maktabi"], answer: 0 },
+  { q: "Klassik - ma'muriy maktabning yorqin namoyondasi:", options: ["Anri Fayol", "F.Teylor", "Meri Parker Follet", "A Maslou"], answer: 0 },
+  { q: "Klassik yoki ma'muriy boshqaruv maktabi fikrlarining rivojlanish davri:", options: ["1920-1950 yil", "1885-1920 yil", "1930 – 1950 yildan hozirgi davrgacha", "1950 – hozirgi davrgacha"], answer: 0 },
+  { q: "Fayolning diqqat markazida, eng avvalo:", options: ["14 tadan iborat boshqarish prinsiplari turadi", "ikki prinsip, ya'ni aniq qo'yilgan maqsad va g'oyalar, shuningdek oqil va sog'lom fikr yotadi", "«insoniy munosabatlar» ni shakllantirish fikri turadi", "yollanma ishchilar mehnatining unumdorligini oshirishda samarador usullarni izlash turadi"], answer: 0 },
+  { q: "Ilmiy boshqaruv maktabi fikrlarining rivojlanish davri:", options: ["1885 – 1920 yil", "1920 – 1950 yil", "1930 – 1950 yildan hozirgi davrgacha", "1950 – hozirgi davrgacha"], answer: 0 },
+  { q: "Amir Temurning davlatni boshqarish tamoyillari nimalardan iborat?", options: ["ilmiylik, yakka hokimlik, ierarxiya, demokratiya, mashvarat", "buyruqbozlik, qattiq markazlashuv, formalizm", "bilimdonlik, ierarxiya, javobgarlik", "avtokratik, yakka hokimlik, buyruqbozlik, konservatizm"], answer: 0 },
+  { q: "Mehnatni texnokratik boshqarilishiga qaysi maktablar asos solishdi?", options: ["«Ilmiy menejment» va «mumtoz menejment» namoyandalari", "«Ilmiy menejment» va «insoniy munosabatlar maktabi» namoyandalari", "«Mumtoz menejment» va «insoniy munosabatlar maktabi» namoyandalari", "«Ilmiy menejment» va «Tizimli menejment» namoyondalari"], answer: 0 },
+  { q: "F. Teylor menejmentning qaysi tamoyillarini aniqlagan?", options: ["ishchini ilmiy tanlash, ishchini ilmiy o'qitish va ishni ixtisoslashtirish", "ishni ixtisoslashtirish", "ishchini ilmiy tanlash, ishchini ilmiy o'qitish", "ishni samarali bajarilishi uchun ishchilarni resurslar bilan ta'minlash"], answer: 0 },
+  { q: "«Ilmiy menejment» maktabi qachon va qayerda rivojlandi?", options: ["XIX asrning oxiri va XX asrning boshlarida Amerikada shakllana boshlagan", "XVIII asrning oxiri va XIX asrning boshlarida Fransiyada shakllana boshlagan", "XVIII asrning oxiri va XIX asrning boshlarida Xitoyda shakllana boshlagan", "XIX asrning oxiri va XX asrning boshlarida Yaponiyada shakllana boshlagan"], answer: 0 },
+  { q: "«Insoniy munosabatlar» maktabi:", options: ["ishchi — bu fikrsiz robot emas degan g'oyani ilgari surgan maktabdir", "«teylorizm»ni qo'llab quvvatlovchi maktabdir", "mehnatni texnokratik boshqarilishiga asos solgan va unumdorlikka qaratilgan maktabdir", "«tizimli menejment»ga qarshi turuvchi maktabdir"], answer: 0 },
+  { q: "Kimlar «Inson munosabatlari» maktabi namoyandalari bo'lgan:", options: ["Meyo E, Laykert R", "G.Ford, A.Maslou", "Teylor A., Emerson G.", "Druker P, Deyl E."], answer: 0 },
+  { q: "F.Teylor tamoyiliga binoan…", options: ["ishchidan boshliqlarning barcha buyruqlarini hech qanday mulohaza yuritmasdan, biror bir shaxsiy tashabbus ko'rsatmasdan aniq hamda tez bajarishini talab qilinar edi", "bunday yondashuvda ishchining kasbiy salohiyati, tashabbuskorligi va mustaqil fikrlashi qadrlanadi", "boshqaruv xodimlari samarali boshqaruvni tashkil etishi lozim bo'lgan", "ishchi va boshqaruvchilar teng ko'rilgan"], answer: 0 },
+  { q: "Amir Temur fikriga ko'ra, vazirlar quyida qayd qilingan sifatlarning qaysi biriga ega bo'lishlari shart:", options: ["asillik, toza nasllik va ulug'vorlik", "aqlli, farosatlilik", "sipoh bilan raiyat axvolidan boxabarlik va ularga g'amxo'rlik ko'rsatish, yaxshi muomala", "sabr-bardoshlilik, muloyimlik"], answer: 0 },
+  { q: "X(iks) va U (igrek) nazariyasining namoyandasi kim:", options: ["amerikalik olim D. Mak-Gregor", "amerikalik iqtisodchi G. Emerson", "amerikalik muhandis F. Teylor", "Fransuz olimi A Fayol"], answer: 0 },
+  { q: "F. Teylorning diqqat markazida, eng avvalo:", options: ["yollanma ishchilar mehnatining unumdorligini oshirishda g'oyatda samarador va maqbul usullarni izlash turadi", "ikki prinsip ya'ni aniq qo'yilgan maqsad va g'oyalar, shuningdek oqil va sog'lom fikr turadi", "14 tadan iborat boshqarish prinsiplari turadi", "«insoniy munosabatlar», «birdamlik ruxi», «mushtaraklik tuyg'usi» shakllantirish fikri turadi"], answer: 0 },
+  { q: "Boshqaruvning umumdavlat organlari quyidagilardan iborat?", options: ["qonun chiqaruvchi organ, ijro etuvchi organ, sud organlari", "sud organlari, Viloyat hokimiyati, tuman hokimligi", "Oliy Majlis, konsernlar, jamoat birlashmalari", "viloyatlar xalq deputatlari kengashi, tuman, shahar xalq deputatlari kengashi"], answer: 0 },
+  { q: "Funksiya bu…", options: ["biror kimsa yoki narsaning ish faoliyat doirasi, vazifasi", "ichki faoliyat doirasi", "vazifa va majburiyat", "imkon doirasi"], answer: 0 },
+  { q: "Quyidagilarning qaysi biri menejmentning prinsiplaridan biri hisoblanadi?", options: ["ierarxiya prinsipi", "nomenklatura prinsipi", "formalizm, rasmiyatchilik prinsipi", "konservatizm prinsipi"], answer: 0 },
+  { q: "Menejment fanining tahlil usullari:", options: ["sistemali, kompleks, kuzatish, integratsion, iqtisodiy matematik, eksperiment, sotsiologik kuzatuv", "mikrodarajada, makrodarajada", "sistemali, samarali, ierarxik", "sotsiologik kuzatuv, sistemali, aloqali, funksional, chiziqli, eksperiment"], answer: 0 },
+  { q: "Yuksak ma'naviyat tamoyili:", options: ["o'zini va o'z xalqining vatanini qadru qimmati, or-nomusini anglab, uni himoya qilish", "mustaqillik tafakkurini kengroq tushunish", "yuksak g'oyalar, yangi kashfiyotlar, yaxshi niyatlar og'ushida mehnat qilish", "qat'iy belgilangan narxlardan erkin narxlarga o'tish"], answer: 0 },
+  { q: "Iqtisodiy munosabatlarni demokratiyalash tamoyili deganda:", options: ["monopollashgan iqtisoddan erkin iqtisodga o'tish tushuniladi", "mustaqillik fikrini kengroq anglash tushuniladi", "davlat va jamiyat boshqaruvida qonunning ustivorligi tushuniladi", "respublikaning dunyo xamjamiyatiga kirish sur'atlarini tezlashtirish tushuniladi"], answer: 0 },
+  { q: "Demokratiya tamoyili deganda:", options: ["insoning o'z hohish irodasini erkin bildirishi hamda uni amalga oshirish", "sotsialistik musobaqadan erkin raqobatga o'tish", "barcha fuqarolarni teng huquqliligi", "davlatlashgan mulkdan xilma-xil mulkchilikka tayangan iqtisodiyotga o'tish"], answer: 0 },
+  { q: "Maqsad bu:", options: ["u yoki bu niyatga erishish uchun ko'zda tutilgan mushtarak orzu", "maqsadning muhimligi jihatidan zanjirlanishi, tartiblanishi tushuniladi", "«jang» bilan zabt qilinadigan bamisoli cho'qqidir", "tartibga solish va muvofiqlashtirish"], answer: 0 },
+  { q: "Quyida qayd qilingan funksiyalarning qaysi biri boshqarishning sotsial funksiyasiga kiradi?", options: ["xodimlarning ijtimoiy himoyasini ta'minlash", "boshqarish devoni xodimlari o'rtasida mas'uliyatlarni belgilash", "korxonada marketing xizmatini uyushtirish", "mablag'larni aylanma harakatini ta'minlash"], answer: 0 },
+  { q: "«Maqsadlar shajarasi» deganda", options: ["maqsadlar bilan ularga erishish vositalari o'rtasidagi aloqaning grafik tasviri tushuniladi", "maqsadni qo'yish va amalga oshirishning mavjud shart-sharoitlarga bog'liqligi tushuniladi", "bir maqsadning boshqa maqsadga bo'ysunishi tushuniladi", "maqsadning muhimligi jihatidan zanjirlanishi, tartiblanishi tushuniladi"], answer: 0 },
+  { q: "Quyida qayd qilingan funksiyalarning qaysi biri boshqarishning ma'naviy-ma'rifiy funksiyasiga kiradi:", options: ["xodimlarda halollikni, adolat tuyg'usini tarbiyalashga xizmat qilish", "xodimlarning sotsial ehtiyojlarini qondirish", "boshqarish apparati xodimlari o'rtasida mas'uliyatlarni belgilash va anglash", "foyda olishni ta'minlash"], answer: 0 },
+  { q: "X nazariyasiga ko'ra yollanma xodim:", options: ["tabiatdan yalqov bo'ladi", "uddaburon bo'ladi", "o'z zimmasiga mas'uliyat olishga tayyor bo'ladi", "tabiatdan faol, tashabbuskor bo'ladi"], answer: 0 },
+  { q: "Y nazariyasiga ko'ra yollanma xodim:", options: ["tabiatdan faol, uddaburon, tashabbuskor bo'ladi", "izzat talab bo'ladi", "tabiatdan yalqov bo'ladi", "fahm-farosatli bo'ladi"], answer: 0 },
+  { q: "Boshqarishning iqtisodiy metodlari:", options: ["iqtisodiy manfaatlardan foydalanishga asoslanadi", "buyruqlar, farmoyishlar va qo'llanmalar chiqarish, ularning bajarilishini nazorat qilishga asoslanadi", "kadrlarni to'g'ri tanlashga asoslanadi", "boshqarish apparatining muayyan strukturasini tuzishga asoslanadi"], answer: 0 },
+  { q: "E.Meyoning diqqat markazida, eng avvalo:", options: ["«insoniy munosabatlar»ni shakllantirish fikri turadi", "14 tadan iborat boshqarish prinsiplari turadi", "ikki prinsip, ya'ni aniq qo'yilgan maqsad va g'oyalar, shuningdek oqil va sog'lom fikr yotadi", "yo'llanma ishchilar mehnatining unumdorligini oshirishda samarador usullarni izlash turadi"], answer: 0 },
+  { q: "Boshqaruv qarorlariga qo'yiladigan talablar?", options: ["ilmiy asoslanganlik, aloqadorlik, aniq va to'g'rilik, qisqalik, tezkorlik", "manfaatdorlik, samaradorlik, ko'tarinkilik", "samaralilik, operativlik, yakkaboshchilik, muqobillik, mukammallik", "aniq maqsad, mustaqillik, ijobiy natija, mukammallik"], answer: 0 },
+  { q: "Boshqarishning huquqiy vositalari quyidagilardan iborat:", options: ["ijtimoiy munosabatlarga yuridik, qonuniy ta'sir o'tkazish jarayonida qo'llaniladigan huquqiy me'yorlar majmui", "iqtisodiy usullardan va manfaatlardan qonuniy foydalanish", "kredit va foiz stavkasi, soliqlar, boj to'lovlari", "eksport va importni muvozanatlashtirish, innovatsiyani yo'lga qo'yish"], answer: 0 },
+  { q: "Samaradorlik omili – bu …", options: ["raqobat sharoitida tashkilot yashab qolishi va muvaffaqiyat qozonishi uchun muhim bo'lgan omil", "haqiqiy ishning haqiqiy ishchilar tomonidan boshqarilishi", "savdoning katta hajmi", "ishlab chiqarish xarajatlarining ko'rsatkichi omili"], answer: 0 },
+  { q: "Firmaning tashkiliy tuzilmasiga qanday omillar ta'sir ko'rsatadi?", options: ["iqtisodiy, ijtimoiy, siyosiy, ilmiy, texnikaviy omillar", "ishlab chiqarish omillari", "demografik va geografik omillar", "ish vaqti va mehnat sharoitlari"], answer: 0 },
+  { q: "Ma'muriy buyruqbozlik tizimi sharoitida davlat qaysi omillarga asoslanib boshqariladi:", options: ["avtokratlik prinsipi", "demokratiyalash prinsipi", "demokratiyani tan olmaslik prinsipi", "qayta aloqalar prinsipi"], answer: 0 },
+  { q: "Boshqarishning ijtimoiy funksiyasi maqsadi:", options: ["ijtimoiy himoyani ta'minlash", "iqtisodiy rag'batlantirishni qo'llash", "xodimlarni mehr-shafqatli bo'lish ruhida tarbiyalash", "axborotlar oqimini tashkil qilish"], answer: 0 },
+  { q: "Texnologiya – bu:", options: ["ilmiy-praktika asosida xom-ashyoni tayyor mahsulotga aylantirishning usullari", "xom-ashyoni qayta taqsimlash usullari", "xom-ashyoni sotishda qo'llaniladigan jarayon", "ishchilarni boshqarish jarayonlari"], answer: 0 },
+  { q: "Boshqarish strukturalarining tashkiliy turlari:", options: ["chiziqli, chiziqli shtabli, funksional, chiziqli funksional, dasturli maqsadli", "bosh shtab, chiziqli, chiziqli shtabli, dasturli maqsadli, chiziqli funksional", "chiziqsiz, funksional, dasturli maqsadli", "funksional, dasturli maqsadli, chiziqsiz funksional, bosh shtab"], answer: 0 },
+  { q: "Boshqaruv funksiyalari deganda nimani tushunasiz?", options: ["menejmentning ma'lum masalalarini yechishga yo'naltirilgan ishlar yig'indisi", "bu boshqaruv apparati xodimlarining mehnat jarayoni", "bu ishlab chiqarish jarayonining muvofiqlashtirib turuvchi marketing", "bu ishlab chiqarishni tashkil etish"], answer: 0 },
+  { q: "Boshqaruv jarayoni bosqichlarini aniqlang?", options: ["maqsadni aniqlash, holat, muammo, yechim", "oldindan maqsadni bilish, analitik ishlar", "axborot ishlari, harakat variantlari tanlovi", "tashkiliy va amaliy ishlar"], answer: 0 },
+  { q: "Menejmentning eng ko'p qo'llaniladigan tashkiliy tuzilmasi qaysi?", options: ["chiziqli funksional", "funksional", "chiziqli", "matritsali loyiha"], answer: 0 },
+  { q: "Boshqaruv tizimlari faoliyat ko'rsatishining uyg'unligi, alohida qismlar, kichik tizimlarning qanchalik o'zaro muvofiqlligiga bog'liqlik tamoyili?", options: ["proporsionallik", "dasturlashtirish", "modellashtirish", "muvozanatlashganlik"], answer: 0 },
+  { q: "Boshqarishning tashkiliy tuzilmalari bozorning qanday talablariga javob berishi kerak?", options: ["tashkiliy tuzilma oddiy va tushunarli, barcha bo'g'inlari optimal bo'lishi kerak", "tashkiliy tuzilma egiluvchan va bozordagi o'zgarishlarni payqashi kerak", "tashkiliy qurilma bo'g'in va bosqichlardan iborat bo'lishi kerak", "tashkiliy tuzilma funksional bo'lishi kerak"], answer: 0 },
+  { q: "Amal qilish davriga ko'ra qaror turi qaysi qatorda to'g'ri ko'rsatilgan?", options: ["vaqtinchalik qarorlar", "an'anaviy qarorlar", "sterotip qarorlar", "maqsadlar tobeligi"], answer: 0 },
+  { q: "Boshqaruv qarorlarini qabul qilishda qo'llaniladigan usullar qaysilar?", options: ["iqtisodiy, ijtimoiy, ma'muriy, ruhiy usullar", "muammoni qo'yish, muammoni yechish, qarorni tanlash, qarorlarning bajarilishini ta'minlash", "iqtisodiyotni diversifikasiyalash, boshqaruvga yordam berish, korxonaga imtiyozlar berish", "huquqiy, ma'muriy, texnikaviy usullar"], answer: 0 },
+  { q: "Menejerlar pog'onasiga ko'ra nechta darajaga bo'linadi, ular qaysilar?", options: ["oliy, o'rta, quyi", "texnik, boshqaruv, institutsional", "iqtisodiy, moliyaviy, texnik", "gorizontal, vertikal, tarmoqli"], answer: 0 },
+  { q: "Tashkilot missiyasi (zimmasidagi vazifa) nimani anglatadi?", options: ["tashkilotning nima uchun mavjudligi, oliy maqsadi, faoliyat tavsifi, mijozlar uchun nima qilish kerakligini", "erishish zarur bo'lgan natijalarga yo'naltirilgan bir-biriga bog'liq harakatlar yig'indisidir", "yuksak bilimli va intellektual rivojlangan avlodni tarbiyalashni", "samaraga erishish, faoliyat tavsifi, mijozlar uchun nima qilish kerakligini"], answer: 0 },
+  { q: "Tashkilot strategiyasi bu?", options: ["erishish zarur bo'lgan natijalarga yo'naltirilgan bir-biriga bog'liq harakatlar yig'indisi", "faoliyat tavsifi, mijozlar uchun nima qilish kerakligi", "yuksak bilimli va intellektual rivojlangan avlodni tarbiyalash", "samaraga erishish"], answer: 0 },
+  { q: "Korxonaning boshqaruv modeli deganda nimani tushunasiz?", options: ["korxonaning boshqaruv strukturasining sxemasi", "boshqaruv apparati xodimlari o'rtasidagi munosabat", "boshqaruvchi va boshqariluvchi o'rtasidagi munosabat", "boshqaruvning quyi va oliy bosqichi orasidagi munosabat"], answer: 0 },
+  { q: "Korporatsiya deganda nima tushunasiz?", options: ["bu aniq vazifalar, yirik maqsadli dasturlar va loyihalarni amalga oshirish maqsadida tashkil etiladigan birlashma", "rivojlangan yirik aksionerlar jamiyati va trestlar birlashmasidir", "moliyaviy jamg'arma bo'lib, sarmoyalarni birlashtiradi", "jismoniy va yuridik shaxslarning ko'ngilli jamoat birlashmalari"], answer: 0 },
+  { q: "Assotsiatsiya deganda nima tushunasiz?", options: ["korxonalarning paychilik asosidagi ko'ngilli birlashmasi", "iqtisodiy tizimning asosiy va birlamchi bo'g'ini", "xodimlarning ijtimoiy-iqtisodiy huquqlarini va manfaatlarini himoya qiladi", "noishlab chiqarish tarmoqlari, transport va aloqa korxonalarining ko'ngilli birlashmasi"], answer: 0 },
+  { q: "Norasmiy guruhlar deganda nima tushunasiz?", options: ["bu maqsadga erishish uchun shakllangan tarqoq odamlar guruhidir", "bu berilgan ish yoki uning qismi (operatsiya, jarayon)ni bajaruvchi insonlar", "bu tashkilot nazorati uchun shakllangan guruhdir", "bu strategiyani belgilash uchun shakllangan guruhdir"], answer: 0 },
+  { q: "Korxona bu...", options: ["yuridik shaxs huquqiga ega bo'lgan mustaqil xo'jalik yurituvchi sub'yekt", "uyushgan insonlar guruhi va huquqni muhofaza qiluvchi organlar birlashmasi", "Huquqni muhofaza qiluvchi organlar", "foyda olishni ko'zlovchi insonlar jamiyati"], answer: 0 },
+  { q: "Tashkilotning innovatsion maqsadlari bu:", options: ["yangi mahsulotni ishlab chiqarish, yangi texnologiyalarni joriy qilish bo'yicha qo'yiladigan maqsadlar tushuniladi", "tashkilot va uning xodimlari uchun amalga oshirish jihatdan murakkab, resurs talab qiladigan maqsadlar sifatida tushuniladi", "har kun qabul qilinadigan va amalga oshiriladigan odatiy maqsadlar tushuniladi", "xodimlar malakasini oshirish sohasidagi maqsadlar tushuniladi"], answer: 0 },
+  { q: "Sistema-bu:", options: ["bir nechta elementdan tashkil topgan, yagona, ichki o'zaro aloqadorlik", "boshqaruv maqsadi va vazifasi, boshqaruv strukturalarining mexanizmi", "ekstropolyatsiya", "boshqaruv strukturalarining mexanizmi"], answer: 0 },
+  { q: "Korxona salohiyatining raqobatbardoshligi – bu:", options: ["uning muhim parametrlari holatini qandaydir tanlab olingan standartlarga nisbatan kompleks baholashdan iborat bo'lgan salohiyatining solishtirma ta'rifi", "uning hisobot holati nazoratining samaradorligi", "tashkilotning ish samaradorligi, mahsulot sifati, bozor ulushi, moliyaviy natijalari va boshqaruv samaradorligini solishtirish jarayonini anglatadi", "tanlab olingan strategiyalarga baholash"], answer: 0 },
+  { q: "Tashkilot – bu …", options: ["maqsadga erishish uchun faoliyati muvofiqlashtirilgan insonlar birlashmasidir", "hamma uchun qabul qilinadigan qarorning mavjudligi, yagona qonuniyat bilan harakatlanuvchi jarayon", "raqobatchi korxonalar", "yagona qonuniyat bilan harakatlanuvchi jarayon"], answer: 0 },
+  { q: "Ishlab chiqarishni boshqarish deganda:", options: ["buyumlarni iste'molchilar talabiga mos keluvchi sifat tasniflari bilan ishlab chiqarishni ta'minlovchi, maqsadga qaratilgan faoliyat tushuniladi", "korxonada band bo'lgan kishilar salohiyatini rivojlantirish va undan samarali foydalanish", "bozorda amalga oshiriladigan rahbarlik, tashkilotchilik va ma'muriy xarakterdagi alohida faoliyat tushuniladi", "korxona doirasida amalga oshiriladigan rahbarlik, tashkilotchilik, ma'muriy xarakterdagi alohida faoliyat tushuniladi"], answer: 0 },
+  { q: "Lizing firmalar qanday firmalar?", options: ["mashina, asbob-uskuna, transport vositalari, ishlab chiqarish inshootlarini uzoq muddatli ijaraga olish va uzoq muddatli foydalaniladigan tovarlar eksportini kreditlashning shakllaridan biri", "ular turli inshootlar va tuzilmalarni loyihalash, qurish, foydalanishga topshirish bilan shug'ullanadi", "ular ishlab chiqarishning turli muammolari yuzasidan maslahatlar beradi, loyihalash bilan shug'ullanadi", "bu firmalarni tavakkalchilik firmalari deb ham atashadi"], answer: 0 },
+  { q: "Tashkilotning tashqi muhiti elementlarini ko'rsating", options: ["iste'molchilar, raqobatchilar, davlat, mol yetkazib beruvchilar", "mehnatni tashkil etish va ish xaqi bo'limi hamda tashkiliy bo'linmalar", "tashkiliy bo'linmalar", "talab va taklif"], answer: 0 },
+  { q: "Konsalting firmalar qanday firmalar?", options: ["ular ishlab chiqarishning turli muammolari yuzasidan maslahatlar beradi, loyihalash bilan shug'ullanadi, xo'jalik yuritishning yangi shakllariga o'tish, boshqaruv tizimlarini takomillashtirish va shunga o'xshash faoliyat turlariga ko'maklashadi", "tavakkalchilik asosida korxonalar faoliyatini nazorat qiluvchi firmalar", "ilmiy-muhandislik ishlari orqali mavjud jarayonlar takomillashtiriladi, samaradorlik oshiriladi va yangi texnologik echimlar ishlab chiqiladi", "auditorlik xizmatlarini amalga oshiruvchi firmalar"], answer: 0 },
+  { q: "Injiniring firmalari qanday firmalar?", options: ["ular turli inshootlar va tuzilmalarni loyihalash, qurish, foydalanishga topshirish bilan shug'ullanadi", "auditorlik xizmatlarini amalga oshiruvchi firmalar", "salohiyati qudratli xo'jalik tizimi etarlicha moliyaviy vositalari bo'lmagan boshqa bir korxonaga mashina-uskunalar berib turadi", "ular jismoniy va yuridik shaxslarning mulklarini jalb etish bilan shug'ullanadilar"], answer: 0 },
+  { q: "Menejer va tadbirkor o'rtasida qanday farq bor?", options: ["birinchisi yollanma boshqaruvchi, ikkinchisi esa mulk egasi", "birinchisi yollanma boshqaruvchi, ikkinchisi uning faoliyatini nazorat qiluvchi", "birinchisi buyruq beradi, ikkinchisi bajaradi", "ular o'rtasida hech qanday farq yo'q"], answer: 0 },
+  { q: "Menejer - bu:", options: ["ishlab chiqarishni tashkil qilish va boshqarish bo'yicha professional bilimlarga ega bo'lgan yollanma boshqaruvchi", "uch kishidan kam bo'lmagan qo'l ostida ishlovchiga ega bo'lgan rahbar", "ishlab chiqarishni tashkil qilish sohasidagi mutaxassis", "boshqaruv organlarida muayyan lavozimni egallagan shaxs"], answer: 0 },
+  { q: "Menejerlar bilim, malaka va ko'nikmasiga ko'ra quyidagilarning qaysilari kiradi?", options: ["rahbar-diplomat, rahbar-murabbiy, rahbar-innovator", "yuqori pog'onali menejerlar, sangviniklar, xoleriklar va boshqalar", "avtokratik, demokratik va liberal rahbarlar", "sangviyniklar, flegmatiklar, xoleriklar va melanxoliklar"], answer: 0 },
+  { q: "Qanday rahbarlik uslublarini bilasiz?", options: ["avtokratik, liberal, demokratik", "adolat, e'tibor, rasmiy va norasmiy munosabatlar", "ma'lum qilish, tushuntirish", "muammoni yechish, o'zaro hamkorlik"], answer: 0 },
+  { q: "Avtokratik rahbarlar bo'ysinuvchilarning:", options: ["tashabbuskorligiga yo'l qo'ymaydi", "tashabbuskorligiga to'la-to'kis tayanadi", "tashabbuskorligini rag'batlantiradi va undan foydalanadi", "faolligiga rag'batlantiradi"], answer: 0 },
+  { q: "«Karyera» so'zining ma'nosi nimani anglatadi?", options: ["«kasbiy pillapoya bo'yicha ko'tarilish»", "berilgan ma'lumotlarni taqqoslash", "bir kishi haqida ma'lumot to'plash", "tashkilotning rivojlanishini prognoz qila olish"], answer: 0 },
+  { q: "Boshqaruvning avtoritar uslubida boshqaruvchi…", options: ["hamma muammolarni o'zi hal qiladi", "bir qarorga kelishga oldin qo'l ostidagilar bilan maslahatlashadi", "yuqoridan topshiriqlarni kutadi", "hamma javobgarlikni o'zidan soqit qiladi"], answer: 0 },
+  { q: "X nazariyasi sharoitida menejer…", options: ["xodimlarni doimo majburlash, nazorat qilib turish zarur", "xodimlarni rag'batlantirib tursa kifoya", "xodimlarga qulay muhit yaratib bersa kifoya", "xodimlarni doimo jarima solish bilan qo'rqitib turish zarur"], answer: 0 },
+  { q: "SWOT tahlili bu?", options: ["strategik rejalashtirish usuli bo'lib, u tashkilotning ichki va tashqi muhiti omillarini aniqlashga yordam beradi", "xodimlarga qulay muhit yaratilishi", "ma'muriy xududlarning paydo bo'lishi", "boshqaruv vazifalari va texnologiyalarini mukammallashuvi"], answer: 0 },
+  { q: "Y nazariyasi sharoitida menejer:", options: ["xodimlarga qulay muhit yaratib xodimlarni rag'batlantirib tursa kifoya", "xodimlarga tanbeh berib tursa kifoya", "xodimlarni doimo majburlash, nazorat qilib turish zarur", "xodimlarni doimo majburlash, xodimlarni doimo jazolash, jarima solish bilan qo'rqitib turish zarur"], answer: 0 },
+  { q: "Liberal rahbarlar kadrlarni tanlashda:", options: ["beparvolarcha yondashadilar", "kuchli raqobatdoshlardan qutulish payida bo'ladilar", "ishchan, bilimdon xodimlarga mo'ljal oladilar, ularni o'sishiga yordam beradilar", "tashqaridan madad kutadi"], answer: 0 },
+  { q: "Firmaning qaysi boshqaruv darajasi barcha bo'linmalar faoliyatiga muvofiqligi holda firmaning samarali ishlashi va rivojlanishi ta'minlanishini amalga oshiradi?", options: ["boshqaruvning oliy darajasi-Top management", "boshqaruvning o'rtacha darajasi-Middle management", "boshqaruvning quyi darajasi-Lower management", "boshqaruvning marketologi"], answer: 0 },
+  { q: "Yuqori pog'onadagi menejerlar:", options: ["firma istiqbolini belgilash uning kelajagi uchun ahamiyatli chora tadbirlarni ishlab chiqish bilan shug'ullanadi", "firma faoliyatining ayrim tomonlarini, ishlab chiqarish, mehnatni tashkil etish kabilarni boshqarish bilan shug'ullanadi", "tsex bo'lim brigada doirasida ishni tashkil etish, kunlik, haftalik, oylik ish topshiriqlarining bajarilishini boshqarib boradi", "moliya faoliyati yangi tovarlarni o'zlashtirish texnologiyani qo'llash mehnatni tashkil etish kabilarni boshqarish bilan shug'ullanadi"], answer: 0 },
+  { q: "Boshqaruv uslubi…", options: ["bu boshqaruv jarayonida kelib chiqadigan muammolarni hal qilish usullari, yo'llari majmuasidir", "bu boshqaruvning tarkibiy tuzilmasi", "bu boshqaruv funksiyalarini samarali bajarish, boshqaruv jarayonida kelib chiqadigan nizolarni hal qilish usullari, yo'llari majmuasidir", "bu boshqaruv funksiyalarini samarali bajarish"], answer: 0 },
+];
+
+const TOTAL = rawQuestions.length;
+
+const state = {
+  phase: 'menu',
+  fromQ: 1, toQ: Math.min(20, TOTAL),
+  questions: [], current: 0,
+  selected: null, confirmed: false,
+  score: 0, wrong: [],
+  timerOn: false, timeLeft: null, timerInterval: null
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function shuffleOptions(question) {
+  const indexed = question.options.map((opt, i) => ({ opt, isAnswer: i === question.answer }));
+  const shuffled = shuffle(indexed);
+  const newAnswer = shuffled.findIndex(item => item.isAnswer);
+  return { ...question, options: shuffled.map(item => item.opt), answer: newAnswer };
+}
+
+function startTimer() {
+  state.timeLeft = 30;
+  clearInterval(state.timerInterval);
+  state.timerInterval = setInterval(() => {
+    state.timeLeft--;
+    if (state.timeLeft <= 0) { clearInterval(state.timerInterval); confirmAnswer(true); }
+    else renderQuiz();
+  }, 1000);
+}
+function stopTimer() { clearInterval(state.timerInterval); state.timerInterval = null; }
+
+function renderMenu() {
+  const from = state.fromQ, to = state.toQ;
+  const valid = from >= 1 && to <= TOTAL && from < to;
+  const count = valid ? to - from + 1 : 0;
+  const quickSets = [[1,20],[21,40],[41,60],[61,80],[81,TOTAL]];
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <h1>📘 Menejment Quiz</h1>
+      <p class="subtitle">Jami ${TOTAL} ta savol — istalgan oraliqni tanlang</p>
+      <br>
+      <label class="section-label">Tezkor tanlov:</label>
+      <div class="quick-row">
+        ${quickSets.filter(([f,t])=>t<=TOTAL).map(([f,t])=>`<button class="quick-btn" onclick="setRange(${f},${t})">${f}–${t}</button>`).join('')}
+        <button class="quick-btn" onclick="setRange(1,${TOTAL})">Hammasi</button>
+      </div>
+      <label class="section-label">Yoki o'zingiz kiriting:</label>
+      <div class="range-row">
+        <input class="range-input" type="number" id="fromInput" value="${from}" min="1" max="${TOTAL}" oninput="updateRange()">
+        <span class="range-sep">dan</span>
+        <input class="range-input" type="number" id="toInput" value="${to}" min="1" max="${TOTAL}" oninput="updateRange()">
+        <span class="range-sep">gacha</span>
+      </div>
+      ${valid ? `<p class="range-info">✅ ${count} ta savol tanlanadi</p>` : `<p class="err">❌ Noto'g'ri oraliq</p>`}
+      <div class="toggle-row" style="margin-top:20px">
+        <div class="toggle ${state.timerOn?'on':''}" onclick="toggleTimer()"><div class="toggle-dot"></div></div>
+        <span class="toggle-label">Taymer (har savol 30 soniya)</span>
+      </div>
+      <button class="btn-primary" ${valid?'':'disabled'} onclick="startQuiz()">🚀 Testni boshlash</button>
+    </div>`;
+}
+
+function setRange(f, t) { state.fromQ = f; state.toQ = t; renderMenu(); }
+function updateRange() {
+  const f = parseInt(document.getElementById('fromInput').value);
+  const t = parseInt(document.getElementById('toInput').value);
+  if (!isNaN(f)) state.fromQ = f;
+  if (!isNaN(t)) state.toQ = t;
+  renderMenu();
+}
+function toggleTimer() { state.timerOn = !state.timerOn; renderMenu(); }
+
+function startQuiz() {
+  const from = state.fromQ - 1;
+  const to = state.toQ;
+  if (from < 0 || to > TOTAL || from >= to) return;
+  stopTimer();
+  // Shuffle both question order AND options
+  const selected = rawQuestions.slice(from, to);
+  state.questions = shuffle(selected).map(shuffleOptions);
+  state.current = 0; state.selected = null; state.confirmed = false;
+  state.score = 0; state.wrong = []; state.phase = 'quiz';
+  if (state.timerOn) startTimer();
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const q = state.questions[state.current];
+  const progress = (state.current / state.questions.length) * 100;
+  const letters = ['A','B','C','D'];
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="header-row">
+        <span class="header-left">Savol ${state.current+1} / ${state.questions.length}</span>
+        <div class="header-right">
+          <span class="score-badge">✅ ${state.score}</span>
+          ${state.timerOn && state.timeLeft!==null ? `<span class="timer-badge ${state.timeLeft<=10?'timer-urgent':'timer-ok'}">⏱ ${state.timeLeft}s</span>` : ''}
+        </div>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar" style="width:${progress}%"></div></div>
+      <div class="question-box"><p class="question-text">${q.q}</p></div>
+      <div class="options">
+        ${q.options.map((opt,i) => {
+          let cls='option', letter=letters[i]+'.';
+          if (state.confirmed) {
+            if (i===q.answer) { cls+=' correct'; letter='✅'; }
+            else if (i===state.selected && state.selected!==q.answer) { cls+=' wrong'; letter='❌'; }
+          } else if (state.selected===i) cls+=' selected';
+          return `<div class="${cls}" onclick="selectOption(${i})"><span class="opt-letter">${letter}</span>${opt}</div>`;
+        }).join('')}
+      </div>
+      ${!state.confirmed
+        ? `<button class="btn-check ${state.selected!==null?'active':'disabled'}" onclick="confirmAnswer(false)">Tekshirish</button>`
+        : `<button class="btn-next" onclick="nextQuestion()">${state.current+1>=state.questions.length?"Natijani ko'rish 🏁":"Keyingi savol →"}</button>`
+      }
+    </div>`;
+}
+
+function renderResult() {
+  const pct = Math.round((state.score / state.questions.length) * 100);
+  const emoji = pct>=90?'🏆':pct>=70?'👍':pct>=50?'😅':'💪';
+  const msg = pct>=90?"A'lo! Siz tayyor!":pct>=70?"Yaxshi! Biroz yana o'qing.":pct>=50?"O'rtacha. Ko'proq mashq kerak.":"Yana o'qib chiqing!";
+  const scoreColor = pct>=70?'#4ade80':pct>=50?'#fbbf24':'#f87171';
+  document.getElementById('app').innerHTML = `
+    <div class="card">
+      <div class="text-center mb24">
+        <span class="emoji-big">${emoji}</span>
+        <h2>${msg}</h2>
+        <div class="score-big" style="color:${scoreColor}">${pct}%</div>
+        <p class="score-sub">${state.score} / ${state.questions.length} to'g'ri javob</p>
+      </div>
+      ${state.wrong.length>0 ? `
+        <div class="mb24">
+          <p class="wrong-title">❌ Xato javoblar (${state.wrong.length} ta):</p>
+          <div class="wrong-list">
+            ${state.wrong.map(w=>`
+              <div class="wrong-item">
+                <p class="wrong-q">${w.q}</p>
+                <p class="wrong-yours">❌ Siz: ${w.options[w.selected]??'Javob berilmadi'}</p>
+                <p class="wrong-correct">✅ To'g'ri: ${w.options[w.answer]}</p>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+      <div class="result-btn-row">
+        <button class="btn-secondary" onclick="goMenu()">🏠 Menyu</button>
+        <button class="btn-next" onclick="startQuiz()">🔄 Qayta</button>
+      </div>
+    </div>`;
+}
+
+function selectOption(i) { if (state.confirmed) return; state.selected=i; renderQuiz(); }
+function confirmAnswer(timeout) {
+  if ((state.selected===null && !timeout) || state.confirmed) return;
+  state.confirmed=true; stopTimer();
+  const q=state.questions[state.current];
+  if (state.selected===q.answer) state.score++;
+  else state.wrong.push({q:q.q, options:q.options, answer:q.answer, selected:state.selected});
+  renderQuiz();
+}
+function nextQuestion() {
+  if (state.current+1>=state.questions.length) { state.phase='result'; renderResult(); }
+  else { state.current++; state.selected=null; state.confirmed=false; if (state.timerOn) startTimer(); renderQuiz(); }
+}
+function goMenu() { stopTimer(); state.phase='menu'; renderMenu(); }
+renderMenu();
+</script>
+</body>
+</html
